@@ -9,22 +9,38 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+Soit Y une variable numérique 
+On s’intéresse à la moyenne de Y définit par la formule suivante :
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+$$\mu = \frac{1}{N}\sum_{i=1}^N Y_{i}$$
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Cette moyenne n'étant pas calculable, il nous faut donc l'estimer par le bien d'un sondage
+Posons $s_{i}$ la variable aléatoire prenons la valeur 1 si l'individu i est sélectionné dans le plan de sondage et 0 sinon.
+Le plan de sondage est défini pas le vecteur $S = (s_{1}, s_{2}, ..., s_{N})$.
 
-```{r cars}
-summary(cars)
-```
+L'estimateur d'Horvitz-Thompson de la moyenne de Y est donné par la formule suivante :
 
-## Including Plots
+$$\hat{\mu} = \frac{1}{N}\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}$$
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+Ici, nous faisons l'hypothèse que la probabilité d'inclusion $\pi_{i} = \pi$ est la même pour tous les individus i. C'est à dire que $\pi = \frac{n}{N}$.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Dans notre, il s'agit d'une enquête multimode sequentiel (internet, puis téléphone). Il nous faut donc définir deux varibles instrumentale qui identifient les réponses par internet et les réponses par téléphone.
+
+Soit $z_{i}$ la variable aléatoire prenant la valeur 1 si l'individu i répond par internet et 0 sinon.
+
+Soit $w_{i}$ la variable aléatoire prenant la valeur 1 si l'individu i répond par téléphone et 0 sinon.
+Sur les n réponses, on compte t reponses par internet et n-t réponses par téléphone.
+
+Ainsi l'estimateur de la moyenne de Y par internet est donné par la formule suivante :
+
+$$\hat{\mu_{1}} = \frac{1}N\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}(z_{i}+w_{i})$$
+
+Cette d'estimateur est biaisé, car d'après le document de travail (CASTELL, SILLARD, 2021),$\mathbb{E}[s_{i}(z_{i}+w_{i})]\ne \pi$
+On pose $r_{i} = (z_{i}+w_{i})$
+
+Ainsi, on cherche à estimer :
+
+$$\hat{\mu_{2}} = \frac{1}N\sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho}s_{i}r_{i}$$
+
+Où $\hat\rho$ sera à estimer pour que $\hat\mu_{2}$ soit sans biais.
