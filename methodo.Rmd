@@ -8,9 +8,25 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Introduction
 
-Soit Y une variable numérique 
-On s’intéresse à la moyenne de Y définit par la formule suivante :
+Le processus d’une enquête nécessite plusieurs étapes. Parmi ces étapes, on compte la réflexion sur la problématique, la conception des questionnaires jusqu’à la mise en place de la collecte des données et leur suivi. Chacune de ces étapes peut générer des erreurs, si une méthode rigoureuse n’est pas appliquée. On parle dans ce cas de l’erreur totale de l’enquête.
+Parmi les composantes qui forment l’erreur totale, nous avons celles qui sont générées par l’administration du questionnaire, c’est-à-dire les erreurs causées par les différents modes de collecte des données, plus précisément dans les enquêtes intégrant plusieurs modes de collecte des données.
+	L’émergence des enquêtes multimodes, facilitée par le développement rapide des technologies numériques, a entraîné une transformation majeure dans les méthodes de collecte de données. Ces enquêtes combinent plusieurs modes de collecte, tels qu’Internet, le téléphone, le face-à-face ou encore le papier, afin d’améliorer les taux de réponse tout en réduisant les coûts. Elles répondent à un besoin croissant de flexibilité pour s’adapter à des populations de plus en plus diversifiées, mais elles soulèvent aussi des défis méthodologiques importants. Un protocole courant dans ces enquêtes est celui dit séquentiel, où un mode de collecte initial est proposé (souvent Internet), suivi d’un autre (téléphone ou face-à-face) en cas de non-réponse. Bien que cette stratégie permette de minimiser les coûts tout en augmentant le taux de réponse, elle est également associée à deux types de biais majeurs : le biais de sélection et le biais de mesure. Le biais de sélection survient lorsque la probabilité de participation à l’enquête dépend directement de la variable d’intérêt (Y), c’est lorsque le profil des répondants au questionnaire diffère d’un mode de collecte à l’autre. Ce qui complique l’interprétation des résultats et rend difficile l’utilisation des méthodes classiques de redressement. Le biais de mesure, quant à lui, se manifeste lorsque les réponses diffèrent en fonction du mode de collecte utilisé, par exemple entre un questionnaire auto-administré et un entretien téléphonique.
+Ce projet se concentre sur le biais de sélection dans un contexte séquentiel Internet-Téléphone. Plus précisément, il vise à tester les méthodes classiques de redressement en présence d’un biais de non-réponse non-ignorable, à l’aide de simulations de données. La question centrale est de déterminer jusqu’à quel point ces méthodes restent valides, et à partir de quel seuil d’influence des variables non observables (U) elles deviennent inefficaces.
+
+
+Les variables sur lesquelles nous travaillons sont décrites comme suit : 
+
+* X0 une matrice des variables auxiliaire connue pour les répondants et non-répondants ; 
+* X1 une matrice des variables sociodémographique connue uniquement pour les répondants ; 
+* Y la variable d’intérêt, connue uniquement pour les répondants : Y est expliquée par X0 et X1, mais aussi U  
+* U une variable non mesurée affectant la probabilité de réponse à Internet, au téléphone et Y, calculée pour les répondants et les non-répondants 
+* Pi la probabilité de répondre sur Internet 
+* Pt la probabilité de répondre au téléphone 
+
+
+On s’intéresse ici à la moyenne ($\mu$) de Y (variable numérique). Si nous connaissons toutes les valeurs des $Y_{i}$, cette moyenne serait définit par la formule suivante :
 
 $$\mu = \frac{1}{N}\sum_{i=1}^N Y_{i}$$
 
