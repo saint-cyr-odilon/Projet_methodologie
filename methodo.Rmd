@@ -1,24 +1,27 @@
 ---
 title: "Traitement du biais de sélection dans les enquêtes multimodes séquentielles"
-author: "Odilon Saint-Cry DAKPAKETE, Marius DURAND-BARRIER, Ilyass MESSABEL & Anoumou Marc TANO"
+author: "Odilon Saint-Cry DAKPAKETE, Marius DURAND-BARRIER, Ilyass MESSABEL & TANO
+  Anoumou Marc "
 date: "2025-02-12"
-output: 
+output:
   pdf_document:
-    number_sections: TRUE
-    toc: TRUE
-header-includes: 
-  - \usepackage{amsmath}
-  - \usepackage{amsfonts}
-  - \usepackage{amssymb}
-  - \usepackage{graphicx}
-  - \usepackage{float}
-  - \usepackage{titling}
-  - \pretitle{\begin{center}\LARGE\bfseries\vspace{5cm}} # Le titre sera centré et en gras
-  # - \fancyhead[L]{\includegraphics[width=5cm]{Ensai-logo.png}}
-  - \posttitle{\par\end{center}\vspace{1cm}} # On ajoute un espace après le titre
-  - \preauthor{\begin{center}\LARGE}
-  - \postauthor{\par\end{center}\vspace{10cm}}
-  - \newpage
+    number_sections: true
+    toc: true
+  html_document:
+    toc: true
+    df_print: paged
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{amsfonts}
+- \usepackage{amssymb}
+- \usepackage{graphicx}
+- \usepackage{float}
+- \usepackage{titling}
+- \pretitle{\begin{center}\LARGE\bfseries\vspace{5cm}}
+- \posttitle{\par\end{center}\vspace{1cm}}
+- \preauthor{\begin{center}\LARGE}
+- \postauthor{\par\end{center}\vspace{10cm}}
+- \newpage
 ---
 
 
@@ -35,17 +38,17 @@ knitr::opts_chunk$set(echo = TRUE)
 \newpage
 # Introduction
 
-Le processus d’une enquête nécessite plusieurs étapes. Parmi ces étapes, on compte la réflexion sur la problématique, la conception des questionnaires jusqu’à la mise en place de la collecte des données et leur suivi. Chacune de ces étapes peut générer des erreurs, si une méthode rigoureuse n’est pas appliquée. On parle dans ce cas de l’erreur totale de l’enquête.
+Le processus de réalisation d’une enquête repose sur plusieurs étapes essentielles, telles que la formulation de la problématique, la conception des questionnaires, la mise en œuvre de la collecte des données et leur suivi. Chacune de ces phases peut générer des erreurs en l'absence d'une méthode rigoureuse. L'ensemble de ces erreurs constitue l'erreur totale de l'enquête.
 
+Certaines erreurs proviennent de l'administration du questionnaire, c'est-à-dire des difficultés liées aux différents modes de collecte des données. Ce problème se manifeste particulièrement dans les enquêtes multimodes, qui combinent divers supports (Internet, téléphone, face-à-face, papier) afin d'optimiser le taux de réponse tout en maîtrisant les coûts.
 
-Parmi les composantes qui forment l’erreur totale, nous avons celles qui sont générées par l’administration du questionnaire, c’est-à-dire les erreurs causées par les différents modes de collecte des données, plus précisément dans les enquêtes intégrant plusieurs modes de collecte des données.
+Le développement rapide des technologies numériques a favorisé l'émergence des enquêtes multimodes, transformant ainsi les méthodes de collecte de données. L'utilisation simultanée de plusieurs modes permet de mieux répondre aux besoins d'une population de plus en plus diversifiée, tout en soulevant d'importants défis méthodologiques. Par exemple, le protocole séquentiel, souvent utilisé, propose d'abord un mode de collecte (généralement Internet), suivi d'un mode complémentaire (téléphone ou face-à-face) en cas de non-réponse. Bien que cette stratégie permette de maîtriser les coûts et d'augmenter le taux de réponse, elle expose l'enquête à deux types de biais majeurs :
 
+  - Le biais de sélection survient lorsque la probabilité de participation dépend directement de la variable d'intérêt (Y). Ainsi, le profil des répondants peut varier selon le mode de collecte, ce qui complique l'interprétation des résultats et limite l'efficacité des méthodes classiques de redressement.
 
-L’émergence des enquêtes multimodes, facilitée par le développement rapide des technologies numériques, a entraîné une transformation majeure dans les méthodes de collecte de données. Ces enquêtes combinent plusieurs modes de collecte, tels qu’Internet, le téléphone, le face-à-face ou encore le papier, afin d’améliorer les taux de réponse tout en réduisant les coûts. Elles répondent à un besoin croissant de flexibilité pour s’adapter à des populations de plus en plus diversifiées, mais elles soulèvent aussi des défis méthodologiques importants. Un protocole courant dans ces enquêtes est celui dit séquentiel, où un mode de collecte initial est proposé (souvent Internet), suivi d’un autre (téléphone ou face-à-face) en cas de non-réponse. Bien que cette stratégie permette de minimiser les coûts tout en augmentant le taux de réponse, elle est également associée à deux types de biais majeurs : le biais de sélection et le biais de mesure. Le biais de sélection survient lorsque la probabilité de participation à l’enquête dépend directement de la variable d’intérêt (Y), c’est lorsque le profil des répondants au questionnaire diffère d’un mode de collecte à l’autre. Ce qui complique l’interprétation des résultats et rend difficile l’utilisation des méthodes classiques de redressement. Le biais de mesure, quant à lui, se manifeste lorsque les réponses d'un même individu diffèrent en fonction du mode de collecte utilisé, par exemple entre un questionnaire auto-administré et une enquête téléphonique où le répondant va donner des réponses pour paraître dans les normes sociales.
+  - Le biais de mesure se traduit par des réponses divergentes d'un même individu selon le mode de collecte utilisé. Par exemple, lors d'une enquête téléphonique, un répondant peut être tenté d'ajuster ses réponses pour se conformer aux normes sociales, contrairement à ce qu'il ferait dans un questionnaire auto-administré.
 
-
-Ce projet se concentre sur le biais de sélection dans un contexte séquentiel Internet-Téléphone. Plus précisément, il vise à tester les méthodes classiques de redressement en présence d’un biais de non-réponse non-ignorable, à l’aide de simulations de données. La question centrale est de déterminer jusqu’à quel point ces méthodes restent valides, et à partir de quel seuil d’influence des variables non observables (U) elles deviennent inefficaces.
-
+Ce projet se concentre sur le biais de sélection dans le cadre d'une enquête multimode séquentielle combinant Internet et téléphone. Plus précisément, il vise à tester, au moyen de simulations de données, la validité des méthodes classiques de redressement en présence d'un biais de non-réponse non-ignorable. L'objectif est de déterminer jusqu'à quel point ces méthodes restent efficaces et à partir de quel seuil l'influence des variables non observables (U) compromet leur performance.
 
 Pour ce faire, nous allons travailler sur les variables suivantes : 
 
