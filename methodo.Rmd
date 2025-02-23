@@ -59,7 +59,7 @@ Pour ce faire, nous allons travailler sur les variables suivantes :
 \newpage
 
 # Le concepte théorique 
-## L'indicateur à estimer et les variables instrumentales
+## La formulation de l'indicateur d'intérêt
 
 Pour commencer, nous faisons l'hypothése dans ce projet que Y est une variable numérique et nous nous intéressons à l'estimation de sa moyenne ($\mu$).
 Dans le cas où nous connaissons toutes les valeurs des $Y_{i}$ de la population, cette moyenne serait définit par la formule suivante :
@@ -93,4 +93,5 @@ Pour pouvoir corriger ce biais, nous introduisons $\hat\rho_{1}$ et $\hat\rho_{2
 
 $$\hat{\mu_{2}} = \frac{1}N \left(\sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho_{1}}s_{i}z_{i} + \sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho_{2}}s_{i}w_{i}\right)$$
 
-
+## La correction des biais de selection
+Dans notre cas, il s'agit de traiter le biais de non-réponse non-ignorable. Pour cela, nous allons utiliser les méthodes de redressement suivantes :
