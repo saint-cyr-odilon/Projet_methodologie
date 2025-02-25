@@ -50,50 +50,87 @@ Le développement rapide des technologies numériques a favorisé l'émergence d
 
 Ce projet se concentre sur le biais de sélection dans le cadre d'une enquête multimode séquentielle combinant Internet et téléphone. Plus précisément, il vise à tester, au moyen de simulations de données, la validité des méthodes classiques de redressement en présence d'un biais de non-réponse non-ignorable. L'objectif est de déterminer jusqu'à quel point ces méthodes restent efficaces et à partir de quel seuil l'influence des variables non observables (U) compromet leur performance.
 
-Pour ce faire, nous allons travailler sur les variables suivantes : 
-
-* X0 une variables auxiliaire connue pour les répondants et non-répondants ; 
-* X1 une variables sociodémographique connue uniquement pour les répondants ; 
-* Y la variable d’intérêt, connue uniquement pour les répondants : Y est expliquée par X0 et X1, mais aussi U  
-* U une variable non mesurée affectant la probabilité de réponse à Internet, au téléphone et Y, calculée pour les répondants et les non-répondants 
-* Pi la probabilité de répondre sur Internet 
-* Pt la probabilité de répondre au téléphone 
 
 \newpage
 
-# Le concepte théorique 
-## L'indicateur à estimer et les variables instrumentales
+# Concept théorique 
 
-Pour commencer, nous faisons l'hypothése dans ce projet que Y est une variable numérique et nous nous intéressons à l'estimation de sa moyenne ($\mu$).
-Dans le cas où nous connaissons toutes les valeurs des $Y_{i}$ de la population, cette moyenne serait définit par la formule suivante :
+
+Dans ce projet, nous faisons l’hypothèse que Y est une variable numérique et nous cherchons à estimer sa moyenne ($\mu$). Étant donné que nous sommes dans un cadre de simulation, nous disposons de l’ensemble des valeurs $Y_{i}$ de la population simulée. La moyenne réelle de Y est alors définie par la formule suivante :
 
 $$\mu = \frac{1}{N}\sum_{i=1}^N Y_{i}$$
-Etant donné qu'il s'agit d'une enquête, nous ne connaissons pas toutes les valeurs de $Y_{i}$, nous devons donc estimer cette moyenne. Comme cela a été dit dans le document de travail (CASTELL, SILLARD, 2021), le plan de sondage est définie par le vecteur $S = (s_{1}, s_{2}, ..., s_{N})$ avec $s_{i}$ une variable aléatoire prenons la valeur 1 si l'individu i est sélectionné dans le plan de sondage et 0 sinon.
 
-Ainsi,l'estimateur d'Horvitz-Thompson de la moyenne de Y est donné par la formule suivante :
+Nous réalisons ensuite plusieurs simulations à partir de cet échantillon total, en tenant compte de la présence de non-réponse. Dans ces cas, certaines valeurs $Y_{i}$, restent inconnues, ce qui nous oblige à estimer la moyenne. Comme mentionné dans Castell & Sillard (2021), le plan de sondage est défini par le vecteur  $S = (s_{1}, s_{2}, ..., s_{N})$ , où chaque $s_{i}$ est une variable aléatoire prenant la valeur 1 si l’individu i est sélectionné dans l’échantillon, et 0 sinon.
+
+
+L’estimateur d’Horvitz-Thompson de la moyenne de Y est alors donné par :
 
 $$\hat{\mu} = \frac{1}{N}\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}$$
-Cette estimateur est sans biais, car $\mathbb{E}[s_{i}] = \pi_{i}$ ce qui implique  $\mathbb{E}[\hat{\mu}|y] = \mu$
+Cet estimateur est sans biais, car $\mathbb{E}[s_{i}] = \pi_{i}$, ce qui implique  $\mathbb{E}[\hat{\mu}|y] = \mu$
 
+Toutefois, dans notre étude, l’enquête est réalisée en mode séquentiel (Internet, puis téléphone). Si l’on applique une pondération classique sans distinction des modes de collecte, l’estimateur s’écrit : 
 
-Dans notre, il s'agit d'une enquête multimode séquentiel (internet, puis téléphone). Il nous faut donc définir deux variables instrumentale qui identifient les réponses par internet et les réponses par téléphone.
+$$\hat{\mu_{1}} = \frac{1}N\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}r_{i} $$
+où $r_{i}$ est une variable indiquant si l’individu a répondu à l’enquête.
+Cependant, si l’on utilise une approche multiplicative qui distingue les modes de collecte, nous devons introduire deux indicatrices :
 
-Soit $z_{i}$ la variable aléatoire prenant la valeur 1 si l'individu i répond par internet et 0 sinon.
+  - $z_{i}$ : variable aléatoire valant 1 si l’individu i répond par Internet, 0 sinon.
 
-Soit $w_{i}$ la variable aléatoire prenant la valeur 1 si l'individu i répond par téléphone et 0 sinon.
+  - $w_{i}$  : variable aléatoire valant 1 si l’individu i répond par téléphone, 0 sinon.
 
-
-Nous disposons donc de deux vecteurs Z et W qui permettent respectivement d'identifier les réponses par internet et par téléphone. Ces vecteurs sont nos variables instrumentales.
-
-Ainsi l'estimateur de la moyenne de Y peut être donné par la formule suivante :
+On définit alors $r_{i} = (z_{i}+w_{i})$, et les vecteurs Z et W permettent d’identifier les répondants selon leur mode de réponse. L’estimateur devient :
 
 $$\hat{\mu_{1}} = \frac{1}N\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}(z_{i}+w_{i}) = \frac{1}N \left(\sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}z_{i} + \sum_{i=1}^N \frac{y_{i}}{\pi_{i}}s_{i}w_{i}\right)$$
 
-Cette d'estimateur est biaisé, car d'après le document de travail (CASTELL, SILLARD, 2021),$\mathbb{E}[s_{i}(z_{i}+w_{i})]\ne \pi_{i}$
-On pose $r_{i} = (z_{i}+w_{i})$
+Cet estimateur est biaisé, car selon Castell & Sillard (2021), $\mathbb{E}[s_{i}(z_{i}+w_{i})]\ne \pi_{i}$
 
-Pour pouvoir corriger ce biais, nous introduisons $\hat\rho_{1}$ et $\hat\rho_{2}$ qui seront respectivement des modèles de $z_{i}$ et de $w_{i}$ de sorte que $\mathbb{E}[\hat{\mu_{2}}|y] = \mu$, c'est à dire nous allons estimer $\hat\rho_{1}$ et $\hat\rho_{2}$ de sorte que $\hat{\mu_{2}}$ soit sans biais.
+
+Pour corriger ce biais, nous introduisons $\hat\rho_{1}$ et $\hat\rho_{2}$, qui modélisent respectivement $z_{i}$ et de $w_{i}$, de manière à garantir que $\mathbb{E}[\hat{\mu_{2}}|y] = \mu$. Nous estimons donc $\hat\rho_{1}$ et $\hat\rho_{2}$ de sorte que l’estimateur corrigé soit :
 
 $$\hat{\mu_{2}} = \frac{1}N \left(\sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho_{1}}s_{i}z_{i} + \sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho_{2}}s_{i}w_{i}\right)$$
 
+# Simulation
+
+
+## Variables simulées
+
+La mise en place d’un cadre de simulation rigoureux repose sur la maîtrise des corrélations entre les différentes variables. Trois types de variables sont simulées, à savoir:
+
+
+– **Variables représentant la probabilité de réponse selon le mode de collecte**
+
+  - Pi: probabilité de répondre sur Internet 
+  - Pt: probabilité de répondre au téléphone
+
+– **Variable d’intérêt de l’enquête**
+
+  - Y : variable cible de l’enquête, observée uniquement pour les répondants.Elle est expliquée par X0 et X1, mais aussi U. 
+
+– **Variables explicatives**
+
+  - X0: variable auxiliaire disponible pour l’ensemble des répondants et non-répondants.
+  - X1: variable sociodémographique disponible uniquement pour les répondants. 
+  - U: variable instrumentale non observée influençant simultanément la probabilité de réponse par Internet, par téléphone et la valeur de Y. Cette variable est simulée aussi bien pour les répondants que pour les non-répondants.
+
+Nous faisons ensuite varier la corrélation entre ces variables afin d’évaluer l’impact du biais dans l’estimation de Y.
+
+La matrice de corrélation utilisée pour la simulation est la suivante :
+
+....
+
+Enfin, nous représentons les distributions des variables simulées à l’aide d’histogrammes pour mieux visualiser leurs caractéristiques.
+
+
+## Histogramme des variables simulées 
+
+
+## Simulation de l’échantillon et des répondants
+
+Une population simulée d’un million d’individus sert de base à l’étude. Un échantillon aléatoire de 10 000 individus est ensuite extrait pour l’enquête.  
+
+La réponse par internet est déterminée en comparant, pour chaque individu, sa probabilité de réponse \( p_{\text{internet}} \) à un seuil aléatoire : si \( p_{\text{internet}} \) dépasse ce seuil, l’individu répond, sinon il est reclassé comme non-répondant. Ces non-répondants sont ensuite sollicités par téléphone, suivant le même principe avec un seuil distinct. Ceux qui ne répondent à aucun des deux modes sont considérés comme absents de l’enquête.  
+
+Chaque individu se voit attribuer un seuil tiré d’une loi uniforme \( U(0,1) \). Il est considéré comme répondant si sa probabilité de réponse dépasse ce seuil. Cette approche assure que le comportement simulé reflète fidèlement les probabilités de réponse définies.  
+
+Le taux de réponse par mode est obtenu en faisant la moyenne des probabilités de réponse : pour Internet, sur l’ensemble de l’échantillon ; pour le téléphone, sur les non-répondants Internet.
 

@@ -1632,11 +1632,16 @@ Ilyass MESSABEL &amp; TANO Anoumou Marc</h4>
 <div id="TOC">
 <ul>
 <li><a href="#introduction" id="toc-introduction">Introduction</a></li>
-<li><a href="#le-concepte-théorique" id="toc-le-concepte-théorique">Le
-concepte théorique</a>
+<li><a href="#concept-théorique" id="toc-concept-théorique">Concept
+théorique</a></li>
+<li><a href="#simulation" id="toc-simulation">Simulation</a>
 <ul>
-<li><a href="#lindicateur-à-estimer-et-les-variables-instrumentales" id="toc-lindicateur-à-estimer-et-les-variables-instrumentales">L’indicateur
-à estimer et les variables instrumentales</a></li>
+<li><a href="#variables-simulées" id="toc-variables-simulées">Variables
+simulées</a></li>
+<li><a href="#histogramme-des-variables-simulées" id="toc-histogramme-des-variables-simulées">Histogramme des variables
+simulées</a></li>
+<li><a href="#simulation-de-léchantillon-et-des-répondants" id="toc-simulation-de-léchantillon-et-des-répondants">Simulation de
+l’échantillon et des répondants</a></li>
 </ul></li>
 </ul>
 </div>
@@ -1686,74 +1691,126 @@ de non-réponse non-ignorable. L’objectif est de déterminer jusqu’à quel
 point ces méthodes restent efficaces et à partir de quel seuil
 l’influence des variables non observables (U) compromet leur
 performance.</p>
-<p>Pour ce faire, nous allons travailler sur les variables suivantes
-:</p>
-<ul>
-<li>X0 une variables auxiliaire connue pour les répondants et
-non-répondants ;</li>
-<li>X1 une variables sociodémographique connue uniquement pour les
-répondants ;</li>
-<li>Y la variable d’intérêt, connue uniquement pour les répondants : Y
-est expliquée par X0 et X1, mais aussi U<br />
-</li>
-<li>U une variable non mesurée affectant la probabilité de réponse à
-Internet, au téléphone et Y, calculée pour les répondants et les
-non-répondants</li>
-<li>Pi la probabilité de répondre sur Internet</li>
-<li>Pt la probabilité de répondre au téléphone</li>
-</ul>
 <div style="page-break-after: always;"></div>
 </div>
-<div id="le-concepte-théorique" class="section level1">
-<h1>Le concepte théorique</h1>
-<div id="lindicateur-à-estimer-et-les-variables-instrumentales" class="section level2">
-<h2>L’indicateur à estimer et les variables instrumentales</h2>
-<p>Pour commencer, nous faisons l’hypothése dans ce projet que Y est une
-variable numérique et nous nous intéressons à l’estimation de sa moyenne
-(<span class="math inline">\(\mu\)</span>). Dans le cas où nous
-connaissons toutes les valeurs des <span class="math inline">\(Y_{i}\)</span> de la population, cette moyenne
-serait définit par la formule suivante :</p>
+<div id="concept-théorique" class="section level1">
+<h1>Concept théorique</h1>
+<p>Dans ce projet, nous faisons l’hypothèse que Y est une variable
+numérique et nous cherchons à estimer sa moyenne (<span class="math inline">\(\mu\)</span>). Étant donné que nous sommes dans un
+cadre de simulation, nous disposons de l’ensemble des valeurs <span class="math inline">\(Y_{i}\)</span> de la population simulée. La
+moyenne réelle de Y est alors définie par la formule suivante :</p>
 <p><span class="math display">\[\mu = \frac{1}{N}\sum_{i=1}^N
-Y_{i}\]</span> Etant donné qu’il s’agit d’une enquête, nous ne
-connaissons pas toutes les valeurs de <span class="math inline">\(Y_{i}\)</span>, nous devons donc estimer cette
-moyenne. Comme cela a été dit dans le document de travail (CASTELL,
-SILLARD, 2021), le plan de sondage est définie par le vecteur <span class="math inline">\(S = (s_{1}, s_{2}, ..., s_{N})\)</span> avec <span class="math inline">\(s_{i}\)</span> une variable aléatoire prenons la
-valeur 1 si l’individu i est sélectionné dans le plan de sondage et 0
+Y_{i}\]</span></p>
+<p>Nous réalisons ensuite plusieurs simulations à partir de cet
+échantillon total, en tenant compte de la présence de non-réponse. Dans
+ces cas, certaines valeurs <span class="math inline">\(Y_{i}\)</span>,
+restent inconnues, ce qui nous oblige à estimer la moyenne. Comme
+mentionné dans Castell &amp; Sillard (2021), le plan de sondage est
+défini par le vecteur <span class="math inline">\(S = (s_{1}, s_{2},
+..., s_{N})\)</span> , où chaque <span class="math inline">\(s_{i}\)</span> est une variable aléatoire prenant
+la valeur 1 si l’individu i est sélectionné dans l’échantillon, et 0
 sinon.</p>
-<p>Ainsi,l’estimateur d’Horvitz-Thompson de la moyenne de Y est donné
-par la formule suivante :</p>
+<p>L’estimateur d’Horvitz-Thompson de la moyenne de Y est alors donné
+par :</p>
 <p><span class="math display">\[\hat{\mu} = \frac{1}{N}\sum_{i=1}^N
-\frac{y_{i}}{\pi_{i}}s_{i}\]</span> Cette estimateur est sans biais, car
-<span class="math inline">\(\mathbb{E}[s_{i}] = \pi_{i}\)</span> ce qui
+\frac{y_{i}}{\pi_{i}}s_{i}\]</span> Cet estimateur est sans biais, car
+<span class="math inline">\(\mathbb{E}[s_{i}] = \pi_{i}\)</span>, ce qui
 implique <span class="math inline">\(\mathbb{E}[\hat{\mu}|y] =
 \mu\)</span></p>
-<p>Dans notre, il s’agit d’une enquête multimode séquentiel (internet,
-puis téléphone). Il nous faut donc définir deux variables instrumentale
-qui identifient les réponses par internet et les réponses par
-téléphone.</p>
-<p>Soit <span class="math inline">\(z_{i}\)</span> la variable aléatoire
-prenant la valeur 1 si l’individu i répond par internet et 0 sinon.</p>
-<p>Soit <span class="math inline">\(w_{i}\)</span> la variable aléatoire
-prenant la valeur 1 si l’individu i répond par téléphone et 0 sinon.</p>
-<p>Nous disposons donc de deux vecteurs Z et W qui permettent
-respectivement d’identifier les réponses par internet et par téléphone.
-Ces vecteurs sont nos variables instrumentales.</p>
-<p>Ainsi l’estimateur de la moyenne de Y peut être donné par la formule
-suivante :</p>
+<p>Toutefois, dans notre étude, l’enquête est réalisée en mode
+séquentiel (Internet, puis téléphone). Si l’on applique une pondération
+classique sans distinction des modes de collecte, l’estimateur s’écrit
+:</p>
+<p><span class="math display">\[\hat{\mu_{1}} = \frac{1}N\sum_{i=1}^N
+\frac{y_{i}}{\pi_{i}}s_{i}r_{i} \]</span> où <span class="math inline">\(r_{i}\)</span> est une variable indiquant si
+l’individu a répondu à l’enquête. Cependant, si l’on utilise une
+approche multiplicative qui distingue les modes de collecte, nous devons
+introduire deux indicatrices :</p>
+<ul>
+<li><p><span class="math inline">\(z_{i}\)</span> : variable aléatoire
+valant 1 si l’individu i répond par Internet, 0 sinon.</p></li>
+<li><p><span class="math inline">\(w_{i}\)</span> : variable aléatoire
+valant 1 si l’individu i répond par téléphone, 0 sinon.</p></li>
+</ul>
+<p>On définit alors <span class="math inline">\(r_{i} =
+(z_{i}+w_{i})\)</span>, et les vecteurs Z et W permettent d’identifier
+les répondants selon leur mode de réponse. L’estimateur devient :</p>
 <p><span class="math display">\[\hat{\mu_{1}} = \frac{1}N\sum_{i=1}^N
 \frac{y_{i}}{\pi_{i}}s_{i}(z_{i}+w_{i}) = \frac{1}N \left(\sum_{i=1}^N
 \frac{y_{i}}{\pi_{i}}s_{i}z_{i} + \sum_{i=1}^N
 \frac{y_{i}}{\pi_{i}}s_{i}w_{i}\right)\]</span></p>
-<p>Cette d’estimateur est biaisé, car d’après le document de travail
-(CASTELL, SILLARD, 2021),<span class="math inline">\(\mathbb{E}[s_{i}(z_{i}+w_{i})]\ne \pi_{i}\)</span>
-On pose <span class="math inline">\(r_{i} = (z_{i}+w_{i})\)</span></p>
-<p>Pour pouvoir corriger ce biais, nous introduisons <span class="math inline">\(\hat\rho_{1}\)</span> et <span class="math inline">\(\hat\rho_{2}\)</span> qui seront respectivement
-des modèles de <span class="math inline">\(z_{i}\)</span> et de <span class="math inline">\(w_{i}\)</span> de sorte que <span class="math inline">\(\mathbb{E}[\hat{\mu_{2}}|y] = \mu\)</span>, c’est
-à dire nous allons estimer <span class="math inline">\(\hat\rho_{1}\)</span> et <span class="math inline">\(\hat\rho_{2}\)</span> de sorte que <span class="math inline">\(\hat{\mu_{2}}\)</span> soit sans biais.</p>
+<p>Cet estimateur est biaisé, car selon Castell &amp; Sillard (2021),
+<span class="math inline">\(\mathbb{E}[s_{i}(z_{i}+w_{i})]\ne
+\pi_{i}\)</span></p>
+<p>Pour corriger ce biais, nous introduisons <span class="math inline">\(\hat\rho_{1}\)</span> et <span class="math inline">\(\hat\rho_{2}\)</span>, qui modélisent
+respectivement <span class="math inline">\(z_{i}\)</span> et de <span class="math inline">\(w_{i}\)</span>, de manière à garantir que <span class="math inline">\(\mathbb{E}[\hat{\mu_{2}}|y] = \mu\)</span>. Nous
+estimons donc <span class="math inline">\(\hat\rho_{1}\)</span> et <span class="math inline">\(\hat\rho_{2}\)</span> de sorte que l’estimateur
+corrigé soit :</p>
 <p><span class="math display">\[\hat{\mu_{2}} = \frac{1}N
 \left(\sum_{i=1}^N \frac{y_{i}}{\pi_{i}\hat\rho_{1}}s_{i}z_{i} +
 \sum_{i=1}^N
 \frac{y_{i}}{\pi_{i}\hat\rho_{2}}s_{i}w_{i}\right)\]</span></p>
+</div>
+<div id="simulation" class="section level1">
+<h1>Simulation</h1>
+<div id="variables-simulées" class="section level2">
+<h2>Variables simulées</h2>
+<p>La mise en place d’un cadre de simulation rigoureux repose sur la
+maîtrise des corrélations entre les différentes variables. Trois types
+de variables sont simulées, à savoir:</p>
+<p>– <strong>Variables représentant la probabilité de réponse selon le
+mode de collecte</strong></p>
+<ul>
+<li>Pi: probabilité de répondre sur Internet</li>
+<li>Pt: probabilité de répondre au téléphone</li>
+</ul>
+<p>– <strong>Variable d’intérêt de l’enquête</strong></p>
+<ul>
+<li>Y : variable cible de l’enquête, observée uniquement pour les
+répondants.Elle est expliquée par X0 et X1, mais aussi U.</li>
+</ul>
+<p>– <strong>Variables explicatives</strong></p>
+<ul>
+<li>X0: variable auxiliaire disponible pour l’ensemble des répondants et
+non-répondants.</li>
+<li>X1: variable sociodémographique disponible uniquement pour les
+répondants.</li>
+<li>U: variable instrumentale non observée influençant simultanément la
+probabilité de réponse par Internet, par téléphone et la valeur de Y.
+Cette variable est simulée aussi bien pour les répondants que pour les
+non-répondants.</li>
+</ul>
+<p>Nous faisons ensuite varier la corrélation entre ces variables afin
+d’évaluer l’impact du biais dans l’estimation de Y.</p>
+<p>La matrice de corrélation utilisée pour la simulation est la suivante
+:</p>
+<p>….</p>
+<p>Enfin, nous représentons les distributions des variables simulées à
+l’aide d’histogrammes pour mieux visualiser leurs caractéristiques.</p>
+</div>
+<div id="histogramme-des-variables-simulées" class="section level2">
+<h2>Histogramme des variables simulées</h2>
+</div>
+<div id="simulation-de-léchantillon-et-des-répondants" class="section level2">
+<h2>Simulation de l’échantillon et des répondants</h2>
+<p>Une population simulée d’un million d’individus sert de base à
+l’étude. Un échantillon aléatoire de 10 000 individus est ensuite
+extrait pour l’enquête.</p>
+<p>La réponse par internet est déterminée en comparant, pour chaque
+individu, sa probabilité de réponse <span class="math inline">\(p_{\text{internet}}\)</span> à un seuil aléatoire
+: si <span class="math inline">\(p_{\text{internet}}\)</span> dépasse ce
+seuil, l’individu répond, sinon il est reclassé comme non-répondant. Ces
+non-répondants sont ensuite sollicités par téléphone, suivant le même
+principe avec un seuil distinct. Ceux qui ne répondent à aucun des deux
+modes sont considérés comme absents de l’enquête.</p>
+<p>Chaque individu se voit attribuer un seuil tiré d’une loi uniforme
+<span class="math inline">\(U(0,1)\)</span>. Il est considéré comme
+répondant si sa probabilité de réponse dépasse ce seuil. Cette approche
+assure que le comportement simulé reflète fidèlement les probabilités de
+réponse définies.</p>
+<p>Le taux de réponse par mode est obtenu en faisant la moyenne des
+probabilités de réponse : pour Internet, sur l’ensemble de l’échantillon
+; pour le téléphone, sur les non-répondants Internet.</p>
 </div>
 </div>
 
