@@ -50,31 +50,11 @@ Le développement rapide des technologies numériques a favorisé l'émergence d
 
 Ce projet se concentre sur le biais de sélection dans le cadre d'une enquête multimode séquentielle combinant Internet et téléphone. Plus précisément, il vise à tester, au moyen de simulations de données, la validité des méthodes classiques de redressement en présence d'un biais de non-réponse non-ignorable. L'objectif est de déterminer jusqu'à quel point ces méthodes restent efficaces et à partir de quel seuil l'influence des variables non observables (U) compromet leur performance.
 
+![Le processus schématisé de l’enquête](schemat.png)
 
 \newpage
 
 # Concept théorique 
-
-Pour ce faire, nous allons travailler sur les variables suivantes : 
-
-* $X_{0}$ une variables auxiliaire connue pour les répondants et non-répondants ; 
-* $X_{1}$ une variables sociodémographique connue uniquement pour les répondants ; 
-* Y la variable d’intérêt, connue uniquement pour les répondants : Y est expliquée par $X_{0}$ et $X_{1}$, mais aussi par U  
-* U une variable non mesurée affectant la probabilité de réponse à Internet, au téléphone et Y, calculée pour les répondants et les non-répondants 
-* Pi la probabilité de répondre sur Internet 
-* Pt la probabilité de répondre au téléphone 
-
-\newpage
-
-# Le concepte théorique 
-
-## La representation conceptuelle du processus de l'enquête
-![Le processus schématisé de l’enquête](schemat.png)
-
-Comme nous 
-
-## La formulation de l'indicateur d'intérêt
-
 
 Dans ce projet, nous faisons l’hypothèse que Y est une variable numérique et nous cherchons à estimer sa moyenne ($\mu$). Étant donné que nous sommes dans un cadre de simulation, nous disposons de l’ensemble des valeurs $Y_{i}$ de la population simulée. La moyenne réelle de Y est alors définie par la formule suivante :
 
@@ -155,6 +135,6 @@ Chaque individu se voit attribuer un seuil tiré d’une loi uniforme \( U(0,1) 
 Le taux de réponse par mode est obtenu en faisant la moyenne des probabilités de réponse : pour Internet, sur l’ensemble de l’échantillon ; pour le téléphone, sur les non-répondants Internet.
 
 
-## La correction des biais de selection
+# correction des biais de selection
 Dans notre cas, il s'agit de traiter le biais de non-réponse non-ignorable. Pour cela, nous allons utiliser les méthodes de redressement suivantes :
 
