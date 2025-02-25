@@ -52,9 +52,9 @@ Ce projet se concentre sur le biais de sélection dans le cadre d'une enquête m
 
 Pour ce faire, nous allons travailler sur les variables suivantes : 
 
-* X0 une variables auxiliaire connue pour les répondants et non-répondants ; 
-* X1 une variables sociodémographique connue uniquement pour les répondants ; 
-* Y la variable d’intérêt, connue uniquement pour les répondants : Y est expliquée par X0 et X1, mais aussi U  
+* $X_{0}$ une variables auxiliaire connue pour les répondants et non-répondants ; 
+* $X_{1}$ une variables sociodémographique connue uniquement pour les répondants ; 
+* Y la variable d’intérêt, connue uniquement pour les répondants : Y est expliquée par $X_{0}$ et $X_{1}$, mais aussi par U  
 * U une variable non mesurée affectant la probabilité de réponse à Internet, au téléphone et Y, calculée pour les répondants et les non-répondants 
 * Pi la probabilité de répondre sur Internet 
 * Pt la probabilité de répondre au téléphone 
@@ -62,6 +62,10 @@ Pour ce faire, nous allons travailler sur les variables suivantes :
 \newpage
 
 # Le concepte théorique 
+## La representation conceptuelle du processus de l'enquête
+![Add some text here](schemat.png)
+
+Comme nous 
 ## La formulation de l'indicateur d'intérêt
 
 Pour commencer, nous faisons l'hypothése dans ce projet que Y est une variable numérique et nous nous intéressons à l'estimation de sa moyenne ($\mu$).
