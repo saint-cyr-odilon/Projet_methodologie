@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
 
 pacman::p_load(tibble, DT, tidyverse, tidymodels, skimr, rsample, kernlab, ggplot2, readr,
-               gtsummary,MASS,simstudy, dplyr)
+               gtsummary,MASS,simstudy, dplyr,Matrix)
 
 # install.packages("xfun")
 # update.packages(ask = FALSE) # Mise à jour des packages R
@@ -167,6 +167,9 @@ simul_popF <- function(n, mu, var, corMat){
     # Suppression des variables intermédiaires
     don <- don[, .(X0, X1, U, Pi, Pt, Y)]
     
+    # Modification des probabilités pour qu'ils soient entre 0 et 1
+    don <- don |> mutate(Pi = abs(Pi), Pt = abs(Pt))
+    don$Pi[don$Pi>1] <- 1 ; don$Pt[don$Pt>1] <- 1
     return(don)
 }
 ```
@@ -174,19 +177,18 @@ simul_popF <- function(n, mu, var, corMat){
 
 ```{r, echo=FALSe, message=FALSE, warning=FALSE}
 # Fonction de simulation de l'enquête
-sena_enquete <- function(don,n, propi, propt){
- vect_mu <- 1:50
- for(i in 1:50){
-   d <- don[sample(nrow(don),n),]
-   d <- d |> mutate(Z = as.numeric(Pi <= quantile(don$Pi, probs = propi))) |> 
+scenario_enquete <- function(don,n, propi, propt){
+ 
+ d <- don[sample(nrow(don),n),] # Sélection du plan de sondage
+ # Ajout de l'indicatrice des répondants par internet (Z)
+ d <- d |> mutate(Z = as.numeric(Pi <= quantile(don$Pi, probs = propi))) |> 
+   # Ajout de l'indicatrice des répondants par téléphone (W)
      mutate(W = as.numeric(Pi >= quantile(don$Pi, probs = propi) & 
                               Pt <= quantile(don$Pt, probs = propt))) 
- }
  # d$Y[d$Z==0 &d$W==0] <- NA
  # d$X1[d$Z==0 &d$W==0] <- NA
  return(d)
 }
-
 ```
 
 ## simulation des données de la population avec une forte influence de U sur Y, Pi et Pt
@@ -203,6 +205,7 @@ $$\begin{pmatrix}
    \end{pmatrix}$$
    
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
+# simulation des données de la population avec une forte influence de U sur Y, Pi et Pt
 corMat <- matrix(c(1, .3, .2, .1, .1,  
                    .3, 1, .4, .2, .1,  
                    .2, .4, 1, .8, .7,  
@@ -214,38 +217,12 @@ mu <- c(0, 3, 5, 0.5, 0.4)
 sigma <- c(6, 2, 1, .1, .2)
 n <- 10^6
 set.seed(34567)
-don <- simul_popF(n, mu, sigma, corMat)
+don1 <- simul_popF(n, mu, sigma, corMat)
 
-Ymoy = mean(don$Y)
-```
-
+Y1moy = mean(don1$Y)
 
 
-```{r echo=FALSe, message=FALSE, warning=FALSE}
-don |> pivot_longer(cols = names(don), names_to = "Variables", values_to = "Valeurs") |> 
-  ggplot(aes(x = Valeurs, fill = Variables)) +
-  geom_histogram(bins = 30, alpha = 0.7, position = "identity") +
-  facet_wrap(~Variables, scales = "free") +
-  theme_minimal()
-```
-
-```{r echo=FALSe, message=FALSE, warning=FALSE}
-
-set.seed(123)
-pii <- 1/100
-vec_mu <- 1:50
-for(i in 1:50){ 
-  d <- sena_enquete(don, 10000, 0.3, 0.5) 
-  reg <- glm(formula = Z+W~X0, data = d, family = binomial)
-  
-  vec_mu[i] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*reg$fitted.values), na.rm = TRUE)
-}
-```
-
-
-## simulation des données de la population avec une forte influence de U sur Y
-
-```{r echo=FALSe, message=FALSE, warning=FALSE}
+# simulation des données de la population avec une forte influence de U sur Y
 corMat <- matrix(c(1, .3, .2, .1, .1,  
                    .3, 1, .4, .2, .1,  
                    .2, .4, 1, .4, .3,  
@@ -254,7 +231,101 @@ corMat <- matrix(c(1, .3, .2, .1, .1,
                  nrow = 5, byrow = TRUE)
 
 set.seed(34567)
-don <- simul_popF(n, mu, sigma, corMat)
+don2 <- simul_popF(n, mu, sigma, corMat)
+
+Y2moy = mean(don2$Y)
+
+# simulation des données de la population avec une forte influence de U sur Y et Pi
+corMat <- matrix(c(1, .3, .2, .1, .1,  
+                   .3, 1, .4, .2, .1,  
+                   .2, .4, 1, .7, .3,  
+                   .1, .2, .7, 1, .2,  
+                   .1, .1, .3, .2, 1), 
+                 nrow = 5, byrow = TRUE)
+
+set.seed(34567)
+don3 <- simul_popF(n, mu, sigma, corMat)
+
+Y3moy = mean(don3$Y)
+```
+
+
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+don1 |> pivot_longer(cols = names(don), names_to = "Variables", values_to = "Valeurs") |> 
+  ggplot(aes(x = Valeurs, fill = Variables)) +
+  geom_histogram(bins = 30, alpha = 0.7, position = "identity") +
+  facet_wrap(~Variables, scales = "free") +
+  theme_minimal()
+```
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+set.seed(123)
+pii <- 1/100
+n <- 10000
+Mat_mu <- matrix(rep(1:500,12), ncol = 12, byrow = F)
+for(i in 1:500){
+  #----------------------------------------------------------------------
+  # population avec une forte influence de U sur Y, Pi et Pt
+  # ======================================
+  # Scénario 1 : faible taux de réponse internet et téléphone 
+  # (resp 20 % de l'échantillon et 30 % des non répondants internet répondent au téléphone) 
+  d <- scenario_enquete(don1, n, 0.2, 0.3)
+  # d <- d[d$Z==0 | d$W==0,]
+  
+  # Estimation de la probabilité de répondre par internet et par téléphone
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values 
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d[d$Z==0,], family = binomial)
+  p_chap[d$Z==0] <- reg$fitted.values
+  Mat_mu[i,1] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+   # ======================================
+  # Scénario 1 : taux de réponse internet et téléphone fort
+  # (resp 40 % de l'échantillon et 80 % des non répondants internet répondent au téléphone) 
+  d <- scenario_enquete(don1, n, 0.4, 0.8)
+  
+  # Estimation de la probabilité de répondre par internet et par téléphone
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values 
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d[d$Z==0,], family = binomial)
+  p_chap[d$Z==0] <- reg$fitted.values
+  Mat_mu[i,2] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  # ======================================
+  # Scénario 1 : faible taux de réponse internet et un de réponse téléphonique fort 
+  # (resp 20 % de l'échantillon et 75 % des non répondants internet répondent au téléphone) 
+  d <- scenario_enquete(don1, n, 0.2, 0.75)
+  
+  # Estimation de la probabilité de répondre par internet et par téléphone
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values 
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d[d$Z==0,], family = binomial)
+  p_chap[d$Z==0] <- reg$fitted.values
+  Mat_mu[i,3] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  # ======================================
+  # Scénario 1 : fort taux de réponse internet et faible taux de réponse téléphonique
+  # (resp 60 % de l'échantillon et 20 % des non répondants internet répondent au téléphone) 
+  d <- scenario_enquete(don1, n, 0.6, 0.2)
+  
+  # Estimation de la probabilité de répondre par internet et par téléphone
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values 
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d[d$Z==0,], family = binomial)
+  p_chap[d$Z==0] <- reg$fitted.values
+  Mat_mu[i,4] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  
+  #----------------------------------------------------------------------
+  # population avec une forte influence de U sur Y
+  #----------------------------------------------------------------------
+  # population avec une forte influence de U sur Y et Pi 
+}
+mean(Mat_mu[,1]); min(Mat_mu[,1]); max(Mat_mu[,1]); sd(Mat_mu[,1])
+```
+
+
+## simulation des données de la population avec une forte influence de U sur Y
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+
 ```
 
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
@@ -264,27 +335,11 @@ don <- simul_popF(n, mu, sigma, corMat)
 ## simulation des données de la population avec une forte influence de U sur Y et Pi
 
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
-corMat <- matrix(c(1, .3, .2, .1, .1,  
-                   .3, 1, .4, .2, .1,  
-                   .2, .4, 1, .7, .3,  
-                   .1, .2, .7, 1, .4,  
-                   .1, .1, .3, .4, 1), 
-                 nrow = 5, byrow = TRUE)
 
-set.seed(34567)
-don <- simul_popF(n, mu, sigma, corMat)
 ```
 
-## simulation des données de la population avec une faible influence de U sur Y, Pi et Pt
+
 
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
-corMat <- matrix(c(1, .3, .2, .1, .1,
-                   .3, 1, .4, .2, .1,  
-                   .2, .4, 1, .4, .3,  
-                   .1, .2, .4, 1, .4,  
-                   .1, .1, .3, .4, 1), 
-                 nrow = 5, byrow = TRUE)
 
-set.seed(34567)
-don <- simul_popF(n, mu, sigma, corMat)
 ```
