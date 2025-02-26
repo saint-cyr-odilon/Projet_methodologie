@@ -28,6 +28,11 @@ header-includes:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+pacman::p_load(tibble, DT, tidyverse, tidymodels, skimr, rsample, kernlab, ggplot2, readr,
+               gtsummary,MASS,simstudy, dplyr)
+
 # install.packages("xfun")
 # update.packages(ask = FALSE) # Mise à jour des packages R
 # install.packages("xfun", dependencies = TRUE)
@@ -110,7 +115,7 @@ La mise en place d’un cadre de simulation rigoureux repose sur la maîtrise de
 
   - X0: variable auxiliaire disponible pour l’ensemble des répondants et non-répondants.
   - X1: variable sociodémographique disponible uniquement pour les répondants. 
-  - U: variable instrumentale non observée influençant simultanément la probabilité de réponse par Internet, par téléphone et la valeur de Y. Cette variable est simulée aussi bien pour les répondants que pour les non-répondants.
+    - U: variable instrumentale non observée influençant simultanément la probabilité de réponse par Internet, par téléphone et la valeur de Y. Cette variable est simulée aussi bien pour les répondants que pour les non-répondants.
 
 Nous faisons ensuite varier la corrélation entre ces variables afin d’évaluer l’impact du biais dans l’estimation de Y.
 
@@ -137,4 +142,56 @@ Le taux de réponse par mode est obtenu en faisant la moyenne des probabilités 
 
 # correction des biais de selection
 Dans notre cas, il s'agit de traiter le biais de non-réponse non-ignorable. Pour cela, nous allons utiliser les méthodes de redressement suivantes :
+
+```{r, echo=FALSe, message=FALSE, warning=FALSE}
+# Fonction de simulation de la population
+simul_popF <- function(n, mu, var, corMat){
+    # Définition des distributions des variables X0, X1 et U
+    def = defData(varname = "X0", dist = "normal", formula = mu[1], variance = var[1])
+    def = defData(def, varname = "X1", dist = "normal", formula = mu[2], variance = var[2])
+    def = defData(def, varname = "U", dist = "normal", formula = mu[3], variance = var[3])
+    def = defData(def, varname = "Pi", dist = "uniform", formula = "0;1")
+    def = defData(def, varname = "Pt", dist = "uniform", formula = "0;1")
+    
+    # Correction de la matrice pour la rendre définie positive
+    corMat <- as.matrix(nearPD(corMat)$mat)
+    
+    don <- genCorData(n, mu = mu, sigma = sigma, corMatrix = corMat, 
+                       cnames = c("X0", "X1", "U", "Pi", "Pt"))
+    
+    # Définition de Y en fonction de X0, X1 et U
+    don[, Y := 0.5 * X0 + 0.3 * X1 + 0.7 * U + rnorm(.N, 0, 1)]
+    
+    # Suppression des variables intermédiaires
+    don <- don[, .(X0, X1, U, Pi, Pt, Y)]
+    
+    return(don)
+}
+```
+
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+corMat <- matrix(c(1, .3, .2, .1, .1,  
+                   .3, 1, .4, .2, .1,  
+                   .2, .4, 1, .6, .7,  
+                   .1, .2, .6, 1, .4,  
+                   .1, .1, .7, .4, 1), 
+                 nrow = 5, byrow = TRUE)
+
+mu <- c(0, 3, 5, 0.5, 0.4)
+sigma <- c(6, 2, 1, .1, .2)
+n <- 1000
+
+don <- simul_popF(n, mu, sigma, corMat)
+```
+
+
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+don |> pivot_longer(cols = names(don), names_to = "Variables", values_to = "Valeurs") |> 
+  ggplot(aes(x = Valeurs, fill = Variables)) +
+  geom_histogram(bins = 30, alpha = 0.7, position = "identity") +
+  facet_wrap(~Variables, scales = "free") +
+  theme_minimal()
+```
 
