@@ -261,3 +261,17 @@ corMat <- matrix(c(1, .3, .2, .1, .1,
 set.seed(34567)
 don <- simul_popF(n, mu, sigma, corMat)
 ```
+
+## simulation des données de la population avec une faible influence de U sur Y, Pi et Pt
+
+```{r echo=FALSe, message=FALSE, warning=FALSE}
+corMat <- matrix(c(1, .3, .2, .1, .1,
+                   .3, 1, .4, .2, .1,  
+                   .2, .4, 1, .4, .3,  
+                   .1, .2, .4, 1, .4,  
+                   .1, .1, .3, .4, 1), 
+                 nrow = 5, byrow = TRUE)
+
+set.seed(34567)
+don <- simul_popF(n, mu, sigma, corMat)
+```
