@@ -277,7 +277,7 @@ for(i in 1:500){
   # Estimation de la probabilité de répondre par internet et par téléphone
   reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values 
-  Mat_mu[i,4] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  Mat_mu[i,1] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
    # ======================================
   # Scénario 1 : taux de réponse internet et téléphone fort
   # (resp 40 % de l'échantillon et 80 % des non répondants internet répondent au téléphone) 
@@ -286,7 +286,7 @@ for(i in 1:500){
   # Estimation de la probabilité de répondre par internet et par téléphone
   reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values 
-  Mat_mu[i,4] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  Mat_mu[i,2] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : faible taux de réponse internet et un de réponse téléphonique fort 
   # (resp 20 % de l'échantillon et 75 % des non répondants internet répondent au téléphone) 
@@ -295,7 +295,7 @@ for(i in 1:500){
   # Estimation de la probabilité de répondre par internet et par téléphone
   reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values 
-  Mat_mu[i,4] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
+  Mat_mu[i,3] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : fort taux de réponse internet et faible taux de réponse téléphonique
   # (resp 60 % de l'échantillon et 20 % des non répondants internet répondent au téléphone) 
