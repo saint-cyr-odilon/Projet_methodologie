@@ -393,8 +393,51 @@ mean(Mat_mu[,1]); min(Mat_mu[,1]); max(Mat_mu[,1]); sd(Mat_mu[,1])
 
 ## simulation des données de la population avec une forte influence de U sur Y
 
+```{r}
+par(mfrow=c(2,2))
+plot(Mat_mu[,1],main = "internet et téléphone faible", xlab="", ylab="")
+abline(h = Y1moy, col = "red", )
+plot(Mat_mu[,2], main = "internet et téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,3], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,4], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Mat_mu[,5],main = "internet et téléphone faible", xlab="", ylab="")
+abline(h = Y1moy, col = "red", )
+plot(Mat_mu[,6], main = "internet et téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,7], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,8], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Mat_mu[,9],main = "internet et téléphone faible", xlab="", ylab="")
+abline(h = Y1moy, col = "red", )
+plot(Mat_mu[,10], main = "internet et téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,11], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+plot(Mat_mu[,12], main = "internet faible/téléphone forte", xlab="", ylab="")
+abline(h = Y1moy, col = "red")
+```
+
+
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
 
+for(i in 1:12){
+  print(mean(Mat_mu[,i]))
+  print(min(Mat_mu[,i]))
+  print(max(Mat_mu[,i]))
+  print(sd(Mat_mu[,i]))
+}
 ```
 
 ```{r echo=FALSe, message=FALSE, warning=FALSE}
