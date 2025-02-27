@@ -149,29 +149,20 @@ Dans notre cas, il s'agit de traiter le biais de non-réponse non-ignorable. Pou
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Fonction de simulation de la population
 simul_popF <- function(n, mu, var, corMat){
-    # Définition des distributions des variables X0, X1 et U
-    def = defData(varname = "X0", dist = "normal", formula = mu[1], variance = var[1])
-    def = defData(def, varname = "X1", dist = "normal", formula = mu[2], variance = var[2])
-    def = defData(def, varname = "U", dist = "gamma", formula = mu[3], variance = var[3],
-                   link = "log")
-    def = defData(def, varname = "Pi", dist = "uniform", formula = "0;1")
-    def = defData(def, varname = "Pt", dist = "uniform", formula = "0;1")
-    
     # Correction de la matrice pour la rendre définie positive
     corMat <- as.matrix(nearPD(corMat)$mat)
     
     don <- genCorData(n, mu = mu, sigma = sigma, corMatrix = corMat, 
                        cnames = c("X0", "X1", "U", "Pi", "Pt"))
     
+    don$Pi = abs(don$Pi) ; don$Pi[don$Pi==0] = 0.01 ; don$Pi[don$Pi>1] = 0.99
+    don$Pt = abs(don$Pt) ; don$Pt[don$Pt==0] = 0.01 ; don$Pt[don$Pt>1] = 0.99
+    
     # Définition de Y en fonction de X0, X1 et U
-    don[, Y := 0.5 * X0 + 0.3 * X1 + 0.7 * U + rnorm(.N, 0, 1)]
+    don[, Y := 0.5 * X0 + 0.3 * X1 + 0.7 * U]
     
     # Suppression des variables intermédiaires
     don <- don[, .(X0, X1, U, Pi, Pt, Y)]
-    
-    # Modification des probabilités pour qu'ils soient entre 0 et 1
-    don <- don |> mutate(Pi = abs(Pi), Pt = abs(Pt))
-    don$Pi[don$Pi>1] <- 1 ; don$Pt[don$Pt>1] <- 1
     return(don)
 }
 ```
@@ -214,10 +205,10 @@ corMat <- matrix(c(1, .3, .2, .9, .8,
                    .8, .1, .7, .4, 1), 
                  nrow = 5, byrow = TRUE)
 
-mu <- c(0, 3, 5, 0.5, 0.4)
-sigma <- c(6, 2, 1, .1, .2)
+mu <- c(6, 8, 5, 0.5, 0.5)
+sigma <- c(.6, 2, 1, .1, .2)
 n <- 10^6
-set.seed(34567)
+set.seed(345)
 don1 <- simul_popF(n, mu, sigma, corMat)
 
 Y1moy = mean(don1$Y)
@@ -275,10 +266,8 @@ for(i in 1:500){
   # d <- d[d$Z==0 | d$W==0,]
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
-  p_chap <- reg$fitted.values 
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values
   Mat_mu[i,1] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
    # ======================================
   # Scénario 1 : taux de réponse internet et téléphone fort
@@ -286,10 +275,8 @@ for(i in 1:500){
   d <- scenario_enquete(don1, n, 0.4, 0.8)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,2] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : faible taux de réponse internet et un de réponse téléphonique fort 
@@ -297,10 +284,8 @@ for(i in 1:500){
   d <- scenario_enquete(don1, n, 0.2, 0.75)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,3] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : fort taux de réponse internet et faible taux de réponse téléphonique
@@ -308,10 +293,8 @@ for(i in 1:500){
   d <- scenario_enquete(don1, n, 0.6, 0.2)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,4] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   
   #----------------------------------------------------------------------
@@ -324,10 +307,8 @@ for(i in 1:500){
   # d <- d[d$Z==0 | d$W==0,]
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,5] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
    # ======================================
   # Scénario 1 : taux de réponse internet et téléphone fort
@@ -335,10 +316,8 @@ for(i in 1:500){
   d <- scenario_enquete(don2, n, 0.4, 0.8)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
-  p_chap <- reg$fitted.values 
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values
   Mat_mu[i,6] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : faible taux de réponse internet et un de réponse téléphonique fort 
@@ -346,10 +325,8 @@ for(i in 1:500){
   d <- scenario_enquete(don2, n, 0.2, 0.75)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,7] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : fort taux de réponse internet et faible taux de réponse téléphonique
@@ -357,10 +334,8 @@ for(i in 1:500){
   d <- scenario_enquete(don2, n, 0.6, 0.2)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,8] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   #----------------------------------------------------------------------
   # population avec une forte influence de U sur Y et Pi 
@@ -372,10 +347,8 @@ for(i in 1:500){
   # d <- d[d$Z==0 | d$W==0,]
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
-  p_chap <- reg$fitted.values 
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
+  p_chap <- reg$fitted.values
   Mat_mu[i,9] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
    # ======================================
   # Scénario 1 : taux de réponse internet et téléphone fort
@@ -383,10 +356,8 @@ for(i in 1:500){
   d <- scenario_enquete(don3, n, 0.4, 0.8)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,10] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : faible taux de réponse internet et un de réponse téléphonique fort 
@@ -394,10 +365,8 @@ for(i in 1:500){
   d <- scenario_enquete(don3, n, 0.2, 0.75)
   
   # Estimation de la probabilité de répondre par internet et par téléphone
-  reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
+  reg <- glm(formula = Z+W~X0+X1+Y, data = d, family = binomial)
   p_chap <- reg$fitted.values 
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0])
   Mat_mu[i,11] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
   # ======================================
   # Scénario 1 : fort taux de réponse internet et faible taux de réponse téléphonique
@@ -406,9 +375,7 @@ for(i in 1:500){
   
   # Estimation de la probabilité de répondre par internet et par téléphone
   reg <- glm(formula = Z~X0+X1+Y, data = d, family = binomial)
-  p_chap <- reg$fitted.values
-  reg <- glm(formula = W~X0+X1+Y, data = d[d$Z==0], family = binomial)
-  p_chap[d$Z==0] <- reg$fitted.values/(1-p_chap[d$Z==0]) 
+  p_chap <- reg$fitted.values 
   Mat_mu[i,12] <- (1/10^6)*sum(d$Y*(d$Z+d$W)/(pii*p_chap), na.rm = TRUE)
 }
 # mean(Mat_mu[,1]); min(Mat_mu[,1]); max(Mat_mu[,1]); sd(Mat_mu[,1])
@@ -462,10 +429,10 @@ Scénario = c("internet et téléphone faible", "internet et téléphone forte",
 `Le coéficcient de variation` = apply(Mat_mu,2,sd)/`La moyenne des estimateurs`
 
 df = data.frame(Scénario, 
-                `La moyenne des estimateurs` = `La moyenne des estimateurs`[1:4], 
-                `Le biais des estimateurs` = `Le biais des estimateurs`[1:4],
-                `La variance des estimateurs` = `La variance des estimateurs`[1:4], 
-                `Le coéficcient de variation` = `Le coéficcient de variation`[1:4])
+                `Moyenne` = `La moyenne des estimateurs`[1:4], 
+                `Miais` = `Le biais des estimateurs`[1:4],
+                `Variance` = `La variance des estimateurs`[1:4], 
+                `Coéf de variation` = `Le coéficcient de variation`[1:4])
 
 knitr::kable(df, 
       caption =  "Population avec une forte influence de U sur Y, Pi et Pt")
@@ -473,10 +440,10 @@ knitr::kable(df,
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df = data.frame(Scénario, 
-                `La moyenne des estimateurs` = `La moyenne des estimateurs`[5:8], 
-                `Le biais des estimateurs` = `Le biais des estimateurs`[5:8],
-                `La variance des estimateurs` = `La variance des estimateurs`[5:8], 
-                `Le coéficcient de variation` = `Le coéficcient de variation`[5:8])
+                `Moyenne` = `La moyenne des estimateurs`[5:8], 
+                `Biais` = `Le biais des estimateurs`[5:8],
+                `Variance` = `La variance des estimateurs`[5:8], 
+                `Coéf de variation` = `Le coéficcient de variation`[5:8])
 knitr::kable(df, 
       caption =  "Population avec une forte influence de U sur Y")
 ```
@@ -484,10 +451,10 @@ knitr::kable(df,
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df = data.frame(Scénario, 
-                `La moyenne des estimateurs` = `La moyenne des estimateurs`[9:12], 
-                `Le biais des estimateurs` = `Le biais des estimateurs`[9:12],
-                `La variance des estimateurs` = `La variance des estimateurs`[9:12], 
-                `Le coéficcient de variation` = `Le coéficcient de variation`[9:12])
+                `Moyenne` = `La moyenne des estimateurs`[9:12], 
+                `Biais` = `Le biais des estimateurs`[9:12],
+                `Variance` = `La variance des estimateurs`[9:12], 
+                `Coéf de variation` = `Le coéficcient de variation`[9:12])
 
 knitr::kable(df, 
       caption =  "Population avec une forte influence de U sur Y et Pi")
